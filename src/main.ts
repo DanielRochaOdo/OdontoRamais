@@ -1,6 +1,7 @@
 import "./style.css";
 import { carregarAvisos, carregarRamais } from "./data";
-import { agruparPorSetor, escapeHtml, formatDateTime, isAvisoAtivo } from "./utils";
+import { applyTheme, getStoredTheme, toggleTheme } from "./theme";
+import { agruparPorSetor, escapeHtml, isAvisoAtivo } from "./utils";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -11,6 +12,9 @@ if (!app) {
 const root = app;
 
 let busca = "";
+let setorSelecionado = "";
+
+applyTheme(getStoredTheme());
 
 function baixarPlanilha(rows: { nome: string; numero: string; cargo: string; setor: string }[]) {
   const csv = [
@@ -37,16 +41,22 @@ async function render() {
     carregarAvisos({ fallbackOnMissing: true })
   ]);
   const avisosAtivos = avisos.filter(isAvisoAtivo);
+  const setores = [...new Set(ramais.map((ramal) => ramal.setor.replace(/^\*\s*/, "")).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "pt-BR")
+  );
   const filtro = busca.trim().toLowerCase();
   const grupos = agruparPorSetor(
-    filtro
-      ? ramais.filter((ramal) =>
-          [ramal.nome, ramal.numero, ramal.cargo, ramal.setor]
+    ramais.filter((ramal) => {
+      const setorLimpo = ramal.setor.replace(/^\*\s*/, "");
+      const matchBusca = filtro
+        ? [ramal.nome, ramal.numero, ramal.cargo, setorLimpo]
             .join(" ")
             .toLowerCase()
             .includes(filtro)
-        )
-      : ramais
+        : true;
+      const matchSetor = setorSelecionado ? setorLimpo === setorSelecionado : true;
+      return matchBusca && matchSetor;
+    })
   );
 
   root.innerHTML = `
@@ -54,10 +64,14 @@ async function render() {
       <section class="legacy-shell">
         <header class="legacy-header">
           <div class="brand-mark" aria-label="Odontoart">
-            <img src="/logo.png" alt="Odontoart" class="brand-image" />
+            <img src="/logo-removebg-preview.png" alt="Odontoart" class="brand-image" />
           </div>
           <div class="legacy-title-wrap">
             <h1>RAMAIS</h1>
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Alternar tema">
+              <span class="theme-icon theme-sun" aria-hidden="true"></span>
+              <span class="theme-icon theme-moon" aria-hidden="true"></span>
+            </button>
           </div>
         </header>
 
@@ -68,9 +82,11 @@ async function render() {
                   .map(
                     (aviso) => `
                       <article class="notice-strip ${aviso.destaque ? "is-highlight" : ""}">
-                        <strong>${escapeHtml(aviso.titulo)}</strong>
-                        <span>${escapeHtml(aviso.mensagem)}</span>
-                        <small>${formatDateTime(aviso.inicio_exibicao)} até ${formatDateTime(aviso.fim_exibicao)}</small>
+                        <span class="notice-inline">
+                          <strong>${escapeHtml(aviso.titulo)}</strong>
+                          <span class="notice-separator">|</span>
+                          <span>${escapeHtml(aviso.mensagem)}</span>
+                        </span>
                       </article>
                     `
                   )
@@ -81,13 +97,27 @@ async function render() {
 
         <section class="search-area">
           <label for="search-ramal">Buscar por:</label>
-          <input
-            id="search-ramal"
-            class="legacy-input"
-            type="search"
-            placeholder="Digite a busca"
-            value="${escapeHtml(busca)}"
-          />
+          <div class="search-fields">
+            <input
+              id="search-ramal"
+              class="legacy-input search-name"
+              type="search"
+              placeholder="Digite o nome"
+              value="${escapeHtml(busca)}"
+            />
+            <select id="search-setor" class="legacy-input search-sector">
+              <option value="">Todos os setores</option>
+              ${setores
+                .map(
+                  (setor) => `
+                    <option value="${escapeHtml(setor)}" ${setorSelecionado === setor ? "selected" : ""}>
+                      ${escapeHtml(setor)}
+                    </option>
+                  `
+                )
+                .join("")}
+            </select>
+          </div>
           <div class="legacy-actions">
             <button id="search-button" class="legacy-button" type="button">Buscar</button>
             <button id="download-button" class="legacy-button" type="button">Baixar Planilha</button>
@@ -142,16 +172,32 @@ async function render() {
 
   document.querySelector<HTMLInputElement>("#search-ramal")?.addEventListener("input", (event) => {
     busca = (event.currentTarget as HTMLInputElement).value;
+  });
+
+  document.querySelector<HTMLSelectElement>("#search-setor")?.addEventListener("change", (event) => {
+    setorSelecionado = (event.currentTarget as HTMLSelectElement).value;
     void render();
   });
 
   document.querySelector<HTMLButtonElement>("#search-button")?.addEventListener("click", () => {
     busca = document.querySelector<HTMLInputElement>("#search-ramal")?.value ?? "";
+    setorSelecionado = document.querySelector<HTMLSelectElement>("#search-setor")?.value ?? "";
+    void render();
+  });
+
+  document.querySelector<HTMLInputElement>("#search-ramal")?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    busca = (event.currentTarget as HTMLInputElement).value;
     void render();
   });
 
   document.querySelector<HTMLButtonElement>("#download-button")?.addEventListener("click", () => {
     baixarPlanilha(ramais.map(({ nome, numero, cargo, setor }) => ({ nome, numero, cargo, setor })));
+  });
+
+  document.querySelector<HTMLButtonElement>("#theme-toggle")?.addEventListener("click", () => {
+    toggleTheme();
   });
 }
 

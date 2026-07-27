@@ -29,8 +29,38 @@ create table if not exists public.avisos (
 
 create index if not exists avisos_periodo_idx on public.avisos (inicio_exibicao, fim_exibicao);
 
+create table if not exists public.admin_users (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  email text,
+  ativo boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+insert into public.admin_users (user_id, email, ativo)
+select id, email, true
+from auth.users
+on conflict (user_id) do nothing;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.admin_users
+    where user_id = auth.uid()
+      and ativo = true
+  );
+$$;
+
+grant execute on function public.is_admin() to anon, authenticated;
+
 alter table public.ramais enable row level security;
 alter table public.avisos enable row level security;
+alter table public.admin_users enable row level security;
 
 create policy "Leitura pública de ramais"
 on public.ramais
@@ -42,14 +72,19 @@ on public.avisos
 for select
 using (true);
 
-create policy "Operação autenticada de ramais"
+create policy "Leitura própria de admin_users"
+on public.admin_users
+for select
+using (user_id = auth.uid());
+
+create policy "Operação admin de ramais"
 on public.ramais
 for all
-using (auth.role() = 'authenticated')
-with check (auth.role() = 'authenticated');
+using (public.is_admin())
+with check (public.is_admin());
 
-create policy "Operação autenticada de avisos"
+create policy "Operação admin de avisos"
 on public.avisos
 for all
-using (auth.role() = 'authenticated')
-with check (auth.role() = 'authenticated');
+using (public.is_admin())
+with check (public.is_admin());

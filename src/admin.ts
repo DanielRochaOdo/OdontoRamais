@@ -8,6 +8,7 @@ import {
   salvarRamal
 } from "./data";
 import { supabase, supabaseEnabled } from "./lib/supabase";
+import { applyTheme, getStoredTheme, toggleTheme } from "./theme";
 import type { Aviso, Ramal } from "./types";
 import { escapeHtml, formatDateTime, fromInputDateTime, isAvisoAtivo, toInputDateTime } from "./utils";
 
@@ -23,6 +24,17 @@ let ramais: Ramal[] = [];
 let avisos: Aviso[] = [];
 let ramalEditando: string | null = null;
 let avisoEditando: string | null = null;
+let buscaRamaisAdmin = "";
+let setorRamaisAdmin = "";
+
+applyTheme(getStoredTheme());
+
+async function validarAdmin() {
+  if (!supabase) return false;
+  const { data, error } = await supabase.rpc("is_admin");
+  if (error) throw error;
+  return Boolean(data);
+}
 
 async function render() {
   const session = supabase ? (await supabase.auth.getSession()).data.session : null;
@@ -46,6 +58,35 @@ async function render() {
   }
 
   try {
+    const isAdmin = await validarAdmin();
+    if (!isAdmin) {
+      root.innerHTML = `
+        <div class="page-shell">
+          <section class="auth-card">
+            <span class="legacy-label">Admin</span>
+            <h1>Acesso negado</h1>
+            <p>Este usuário autenticado não possui permissão administrativa.</p>
+            <p class="fine-print">O acesso está restrito ao usuário atualmente registrado como admin no Supabase.</p>
+          </section>
+        </div>
+      `;
+      return;
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Falha ao validar permissão administrativa.";
+    root.innerHTML = `
+      <div class="page-shell">
+        <section class="auth-card">
+          <span class="legacy-label">Admin</span>
+          <h1>Permissão não validada</h1>
+          <p>${escapeHtml(message)}</p>
+        </section>
+      </div>
+    `;
+    return;
+  }
+
+  try {
     [ramais, avisos] = await Promise.all([
       carregarRamais({ fallbackOnMissing: false }),
       carregarAvisos({ fallbackOnMissing: false })
@@ -65,18 +106,36 @@ async function render() {
     return;
   }
 
-  const ramalAtual = ramais.find((item) => item.id === ramalEditando) ?? null;
   const avisoAtual = avisos.find((item) => item.id === avisoEditando) ?? null;
+  const setoresRamais = [...new Set(ramais.map((ramal) => ramal.setor.replace(/^\*\s*/, "")).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "pt-BR")
+  );
+  const filtroRamaisAdmin = buscaRamaisAdmin.trim().toLowerCase();
+  const ramaisFiltrados = ramais.filter((ramal) => {
+    const setorLimpo = ramal.setor.replace(/^\*\s*/, "");
+    const matchBusca = filtroRamaisAdmin
+      ? [ramal.nome, ramal.numero, ramal.cargo, setorLimpo]
+          .join(" ")
+          .toLowerCase()
+          .includes(filtroRamaisAdmin)
+      : true;
+    const matchSetor = setorRamaisAdmin ? setorLimpo === setorRamaisAdmin : true;
+    return matchBusca && matchSetor;
+  });
 
   root.innerHTML = `
     <div class="page-shell">
       <section class="legacy-shell admin-legacy-shell">
         <header class="legacy-header admin-header">
           <div class="brand-mark" aria-label="Odontoart">
-            <img src="/logo.png" alt="Odontoart" class="brand-image" />
+            <img src="/logo-removebg-preview.png" alt="Odontoart" class="brand-image" />
           </div>
           <div class="legacy-title-wrap">
             <h1>ADMIN RAMAIS</h1>
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Alternar tema">
+              <span class="theme-icon theme-sun" aria-hidden="true"></span>
+              <span class="theme-icon theme-moon" aria-hidden="true"></span>
+            </button>
           </div>
           <div class="admin-userbar">
             <span class="admin-session">${escapeHtml(session.user.email ?? "Administrador")}</span>
@@ -89,23 +148,22 @@ async function render() {
             <div class="panel-head">
               <div>
                 <span class="legacy-label">Cadastro</span>
-                <h2>${ramalAtual ? "Editar ramal" : "Novo ramal"}</h2>
+                <h2>Novo ramal</h2>
               </div>
             </div>
             <form id="ramal-form" class="form-grid">
-              <input class="legacy-input" name="nome" placeholder="Nome" value="${escapeHtml(ramalAtual?.nome ?? "")}" required />
-              <input class="legacy-input" name="numero" placeholder="Número" value="${escapeHtml(ramalAtual?.numero ?? "")}" required />
-              <input class="legacy-input" name="cargo" placeholder="Cargo" value="${escapeHtml(ramalAtual?.cargo ?? "")}" required />
-              <input class="legacy-input" name="setor" placeholder="Setor" value="${escapeHtml(ramalAtual?.setor ?? "")}" required />
-              <input class="legacy-input" name="email" placeholder="E-mail opcional" value="${escapeHtml(ramalAtual?.email ?? "")}" />
-              <textarea class="legacy-input admin-textarea" name="observacoes" placeholder="Observações">${escapeHtml(ramalAtual?.observacoes ?? "")}</textarea>
+              <input class="legacy-input" name="nome" placeholder="Nome" value="" required />
+              <input class="legacy-input" name="numero" placeholder="Número" value="" required />
+              <input class="legacy-input" name="cargo" placeholder="Cargo" value="" required />
+              <input class="legacy-input" name="setor" placeholder="Setor" value="" required />
+              <input class="legacy-input" name="email" placeholder="E-mail opcional" value="" />
               <label class="toggle-row">
-                <input type="checkbox" name="ativo" ${ramalAtual?.ativo ?? true ? "checked" : ""} />
+                <input type="checkbox" name="ativo" checked />
                 <span>Ramal ativo</span>
               </label>
               <div class="action-row">
-                <button class="legacy-button" type="submit">${ramalAtual ? "Salvar ramal" : "Cadastrar ramal"}</button>
-                <button class="legacy-button secondary-button" id="reset-ramal" type="button">Limpar</button>
+                <button class="legacy-button" type="submit">Cadastrar ramal</button>
+                <button class="legacy-button secondary-button" id="reset-ramal" type="reset">Limpar</button>
               </div>
             </form>
           </article>
@@ -139,9 +197,32 @@ async function render() {
 
           <article class="admin-panel-block span-two">
             <div class="panel-head">
-              <div>
-                <span class="legacy-label">Operação</span>
-                <h2>Ramais cadastrados</h2>
+              <div class="panel-title-row">
+                <div>
+                  <span class="legacy-label">Operação</span>
+                  <h2>Ramais cadastrados</h2>
+                </div>
+                <div class="admin-filter-row">
+                  <input
+                    id="search-admin-ramais"
+                    class="legacy-input admin-search-input"
+                    type="search"
+                    placeholder="Pesquisar ramais cadastrados"
+                    value="${escapeHtml(buscaRamaisAdmin)}"
+                  />
+                  <select id="filter-admin-setor" class="legacy-input admin-sector-select">
+                    <option value="">Todos os setores</option>
+                    ${setoresRamais
+                      .map(
+                        (setor) => `
+                          <option value="${escapeHtml(setor)}" ${setorRamaisAdmin === setor ? "selected" : ""}>
+                            ${escapeHtml(setor)}
+                          </option>
+                        `
+                      )
+                      .join("")}
+                  </select>
+                </div>
               </div>
             </div>
             <div class="legacy-table-wrap">
@@ -157,21 +238,45 @@ async function render() {
                   </tr>
                 </thead>
                 <tbody>
-                  ${ramais
+                  ${ramaisFiltrados
                     .map(
-                      (ramal) => `
-                        <tr>
-                          <td>${escapeHtml(ramal.nome)}</td>
-                          <td>${escapeHtml(ramal.numero)}</td>
-                          <td>${escapeHtml(ramal.cargo)}</td>
-                          <td>${escapeHtml(ramal.setor)}</td>
-                          <td>${ramal.ativo ? "Ativo" : "Inativo"}</td>
-                          <td class="table-actions">
-                            <button class="legacy-button secondary-button" data-edit-ramal="${ramal.id}" type="button">Editar</button>
-                            <button class="legacy-button danger-lite" data-delete-ramal="${ramal.id}" type="button">Excluir</button>
-                          </td>
-                        </tr>
-                      `
+                      (ramal) =>
+                        ramalEditando === ramal.id
+                          ? `
+                            <tr>
+                              <td><input class="legacy-input inline-input" name="nome" form="inline-ramal-form-${ramal.id}" value="${escapeHtml(ramal.nome)}" required /></td>
+                              <td><input class="legacy-input inline-input" name="numero" form="inline-ramal-form-${ramal.id}" value="${escapeHtml(ramal.numero)}" required /></td>
+                              <td><input class="legacy-input inline-input" name="cargo" form="inline-ramal-form-${ramal.id}" value="${escapeHtml(ramal.cargo)}" required /></td>
+                              <td><input class="legacy-input inline-input" name="setor" form="inline-ramal-form-${ramal.id}" value="${escapeHtml(ramal.setor)}" required /></td>
+                              <td>
+                                <label class="toggle-row inline-toggle">
+                                  <input type="checkbox" name="ativo" form="inline-ramal-form-${ramal.id}" ${ramal.ativo ? "checked" : ""} />
+                                  <span>${ramal.ativo ? "Ativo" : "Inativo"}</span>
+                                </label>
+                              </td>
+                              <td class="table-actions">
+                                <form id="inline-ramal-form-${ramal.id}" class="inline-form">
+                                  <input type="hidden" name="email" value="${escapeHtml(ramal.email ?? "")}" />
+                                  <input type="hidden" name="observacoes" value="${escapeHtml(ramal.observacoes ?? "")}" />
+                                  <button class="legacy-button" data-save-ramal="${ramal.id}" type="submit">Salvar</button>
+                                </form>
+                                <button class="legacy-button secondary-button" data-cancel-edit-ramal type="button">Cancelar</button>
+                              </td>
+                            </tr>
+                          `
+                          : `
+                            <tr>
+                              <td>${escapeHtml(ramal.nome)}</td>
+                              <td>${escapeHtml(ramal.numero)}</td>
+                              <td>${escapeHtml(ramal.cargo)}</td>
+                              <td>${escapeHtml(ramal.setor)}</td>
+                              <td>${ramal.ativo ? "Ativo" : "Inativo"}</td>
+                              <td class="table-actions">
+                                <button class="legacy-button secondary-button" data-edit-ramal="${ramal.id}" type="button">Editar</button>
+                                <button class="legacy-button danger-lite" data-delete-ramal="${ramal.id}" type="button">Excluir</button>
+                              </td>
+                            </tr>
+                          `
                     )
                     .join("")}
                 </tbody>
@@ -261,6 +366,10 @@ function renderLogin() {
 }
 
 function bindAdminEvents() {
+  document.querySelector<HTMLButtonElement>("#theme-toggle")?.addEventListener("click", () => {
+    toggleTheme();
+  });
+
   document.querySelector<HTMLButtonElement>("#logout-button")?.addEventListener("click", async () => {
     await supabase!.auth.signOut();
     ramalEditando = null;
@@ -270,7 +379,6 @@ function bindAdminEvents() {
 
   document.querySelector<HTMLButtonElement>("#reset-ramal")?.addEventListener("click", () => {
     ramalEditando = null;
-    void render();
   });
 
   document.querySelector<HTMLButtonElement>("#reset-aviso")?.addEventListener("click", () => {
@@ -290,12 +398,11 @@ function bindAdminEvents() {
           cargo: String(form.get("cargo") ?? ""),
           setor: String(form.get("setor") ?? ""),
           email: String(form.get("email") ?? "") || null,
-          observacoes: String(form.get("observacoes") ?? "") || null,
+          observacoes: null,
           ativo: form.get("ativo") === "on"
         },
-        ramalEditando
+        null
       );
-      ramalEditando = null;
       await render();
     } catch (error) {
       console.error(error);
@@ -332,6 +439,58 @@ function bindAdminEvents() {
       ramalEditando = button.dataset.editRamal ?? null;
       void render();
     });
+  });
+
+  document.querySelectorAll<HTMLElement>("[data-cancel-edit-ramal]").forEach((button) => {
+    button.addEventListener("click", () => {
+      ramalEditando = null;
+      void render();
+    });
+  });
+
+  document.querySelectorAll<HTMLFormElement>("[id^='inline-ramal-form-']").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const ramalId = form.id.replace("inline-ramal-form-", "");
+      const formData = new FormData(form);
+
+      try {
+        await salvarRamal(
+          {
+            nome: String(formData.get("nome") ?? ""),
+            numero: String(formData.get("numero") ?? ""),
+            cargo: String(formData.get("cargo") ?? ""),
+            setor: String(formData.get("setor") ?? ""),
+            email: String(formData.get("email") ?? "") || null,
+            observacoes: String(formData.get("observacoes") ?? "") || null,
+            ativo: formData.get("ativo") === "on"
+          },
+          ramalId
+        );
+        ramalEditando = null;
+        await render();
+      } catch (error) {
+        console.error(error);
+        window.alert("Não foi possível salvar o ramal.");
+      }
+    });
+  });
+
+  document.querySelector<HTMLInputElement>("#search-admin-ramais")?.addEventListener("input", (event) => {
+    buscaRamaisAdmin = (event.currentTarget as HTMLInputElement).value;
+  });
+
+  document.querySelector<HTMLSelectElement>("#filter-admin-setor")?.addEventListener("change", (event) => {
+    setorRamaisAdmin = (event.currentTarget as HTMLSelectElement).value;
+    void render();
+  });
+
+  document.querySelector<HTMLInputElement>("#search-admin-ramais")?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    buscaRamaisAdmin = (event.currentTarget as HTMLInputElement).value;
+    setorRamaisAdmin = document.querySelector<HTMLSelectElement>("#filter-admin-setor")?.value ?? "";
+    void render();
   });
 
   document.querySelectorAll<HTMLElement>("[data-delete-ramal]").forEach((button) => {
