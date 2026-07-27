@@ -16,7 +16,12 @@ DEFAULT_SQL_TARGET = ROOT / "supabase" / "migrations" / "20260727124500_seed_ram
 def normalize(value: object) -> str:
     if value is None:
         return ""
-    return str(value).strip()
+    text = str(value).strip()
+    return text
+
+
+def normalize_setor(value: object) -> str:
+    return normalize(value).lstrip("*").strip()
 
 
 def to_records(source: Path) -> list[dict[str, str]]:
@@ -29,15 +34,15 @@ def to_records(source: Path) -> list[dict[str, str]]:
     for row in rows[1:]:
         data = dict(zip(header, row))
         records.append(
-            {
-                "nome": normalize(data.get("Nome")),
-                "numero": normalize(data.get("Numero")),
-                "cargo": normalize(data.get("Cargo")),
-                "setor": normalize(data.get("Setor")),
-                "email": "",
-                "observacoes": "",
-                "ativo": "true",
-            }
+                {
+                    "nome": normalize(data.get("Nome")),
+                    "numero": normalize(data.get("Numero")),
+                    "cargo": normalize(data.get("Cargo")),
+                    "setor": normalize_setor(data.get("Setor")),
+                    "email": "",
+                    "observacoes": "",
+                    "ativo": "true",
+                }
         )
 
     return records

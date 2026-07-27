@@ -38,6 +38,10 @@ export function isAvisoAtivo(aviso: Aviso) {
 export function agruparPorSetor(lista: Ramal[]) {
   return [...lista]
     .filter((ramal) => ramal.ativo)
+    .map((ramal) => ({
+      ...ramal,
+      setor: ramal.setor.replace(/^\*\s*/, "")
+    }))
     .sort((a, b) => {
       const setor = a.setor.localeCompare(b.setor, "pt-BR");
       if (setor !== 0) return setor;
