@@ -48,10 +48,35 @@ Depois importe `supabase/seed_ramais.csv` na tabela `ramais`.
 npm run dev
 ```
 
+## Vercel
+
+Para deploy correto na Vercel:
+
+1. Configure as variáveis de ambiente do projeto:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+```
+
+2. O projeto já está preparado para build estático com:
+
+- `outputDirectory = dist`
+- rota pública `/`
+- rota administrativa `/admin`
+
+3. O arquivo [`vercel.json`](./vercel.json) já define:
+
+- build com `npm run build`
+- saída em `dist`
+- URL limpa para a área administrativa
+
+Se a Vercel já estiver conectada ao repositório, basta fazer um novo deploy após salvar essas env vars.
+
 ## URLs
 
 - `/`: catálogo público de ramais.
-- `/admin.html`: área administrativa separada e protegida por login do Supabase Auth.
+- `/admin`: área administrativa separada e protegida por login do Supabase Auth.
 
 ## Observações
 
