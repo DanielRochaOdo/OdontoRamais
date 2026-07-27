@@ -1,0 +1,70 @@
+nome,numero,cargo,setor,email,observacoes,ativo
+Dr. Tadeu Oliveira,2001,Presidente,*Presidência,,,true
+Dra. Rosangela,2002,Vice-Presidente,*RH,,,true
+Amanda Miranda,2008,Assistente de RH,*RH,,,true
+Jackeline Barbosa,2003,Superintendente,*Superintendência,,,true
+Luana Ximenes,2009,Assistente Administrativo,Administrativo,,,true
+Jefferson Carvalho,2011,*,Administrativo,,,true
+Samira Ramos,2012,Assistente,Administrativo,,,true
+Lavinia Sanford,2013,Assistente Administrativo,Administrativo,,,true
+Anne Caroline,2018,Assistente Administrativo,Administrativo,,,true
+Regina Bulcão,2034,Gerente Administrativa,Administrativo,,,true
+Luana Santos,2015,Supervisora,Central de Relacionamento,,,true
+Marcação,5090,Fila de atendimento,Central de Relacionamento,,,true
+Vendas,5091,Fila de atendimento,Central de Relacionamento,,,true
+Sac,5092,Fila de atendimento,Central de Relacionamento,,,true
+Credenciado,5093,Fila de atendimento,Central de Relacionamento,,,true
+Pedro Izaias,7002,Auxiliar Backoffice,Central de Relacionamento,,,true
+Consultórios 1 ao 3,2318,*,Clinica - Aguanambi,,,true
+Consultórios 4 ao 8,2319,*,Clinica - Aguanambi,,,true
+Recepção Orto,2320,*,Clinica - Aguanambi,,,true
+Recepção Clinico,2323,*,Clinica - Aguanambi,,,true
+Rafaele Ferreira,2324,Supervisora,Clinica - Aguanambi,,,true
+Consultórios 9 ao 12,2325,*,Clinica - Aguanambi,,,true
+Consultorios Clinico,2101,*,Clinica - Bezerra,,,true
+Consultorios Orto,2102,*,Clinica - Bezerra,,,true
+Recepção Clinico,2104,*,Clinica - Bezerra,,,true
+Recepção Orto,2105,*,Clinica - Bezerra,,,true
+Recepção Clinico,2200,*,Clinica - Parangaba,,,true
+Recepção Clinico,2201,*,Clinica - Parangaba,,,true
+Sala de Esterilazação 1,2202,*,Clinica - Parangaba,,,true
+Sala de Esterilazação 2,2203,*,Clinica - Parangaba,,,true
+Sala de Esterilazação 3,2204,*,Clinica - Parangaba,,,true
+Taissa,2205,Assistente Financeiro,Clinica - Parangaba,,,true
+Recepção Orto,2206,*,Clinica - Parangaba,,,true
+Recepção Orto,2207,*,Clinica - Parangaba,,,true
+Sala de Esterilazação 4,2208,*,Clinica - Parangaba,,,true
+Sala de Esterilazação 5,2209,*,Clinica - Parangaba,,,true
+Sala de Esterilazação 6,2210,*,Clinica - Parangaba,,,true
+Thais,2211,Almoxarifado,Clinica - Parangaba,,,true
+Copa,2212,Copa,Clinica - Parangaba,,,true
+Dr. Davi Barros,2213,Coodenador,Clinica - Parangaba,,,true
+Charlyane,2214,Supervisora Clinica,Clinica - Parangaba,,,true
+Tayane / Andreza,1000,Recepção,Clinica - Sobral,,,true
+Consultorio,1001,*,Clinica - Sobral,,,true
+Administração,1002,*,Clinica - Sobral,,,true
+Vendas,1003,*,Clinica - Sobral,,,true
+Rodrigo Leite,2016,Gerente,Comercial,,,true
+Tiago Rios,2051,Gerente Comercial,Comercial,,,true
+Sr. Antonio / Dona Jackeline,2032,Serviços Gerais,Copa,,,true
+John Hudson,2020,Auditor Clinico,Credenciamento / Contas,,,true
+Deynny Moura,2021,Analista de Credenciamento,Credenciamento / Contas,,,true
+Maria Daldiziela,6002,Assitente,Credenciamento / Contas,,,true
+Bianca Castro,6003,Asistente,Credenciamento / Contas,,,true
+Roberta Braga,2006,Assistente de DP,Departamento Pessoal - DP,,,true
+Valonia,2007,Supervisora,Departamento Pessoal - DP,,,true
+Dra. Sandra,2213,Diretora Clinica,Diretoria Clinica,,,true
+Sandra Gomes,2004,Assistente,Financeiro,,,true
+Gerusa Pinheiro,2005,Gerente,Financeiro,,,true
+Douglas Moreira,2023,Assistente,Financeiro,,,true
+Castelo,2025,Assistente de Marketing,Marketing,,,true
+Larissa de Melo,2025,Coordenadora de Marketing,Marketing,,,true
+-,2050,Gerente,Novos Negocios,,,true
+Lucas Williame,2052,Assis. Comercial,Novos Negocios,,,true
+Lissandra Moura,2017,Recepcionista,Recepção - ADM,,,true
+Sala de Reunião 02,2029,*,Salas de Reunião,,,true
+Sala de Reunião 01,2030,*,Salas de Reunião,,,true
+Daniel,2028,Técnico,T.I,,,true
+Vinicius Oliveira,2028,Tecnico,T.I,,,true
+Júlio Simão,2028,Estagiário de T.I,T.I,,,true
+Cezar Ferreira Gomes,2031,Diretor de Ti,T.I,,,true

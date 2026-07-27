@@ -1,0 +1,271 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Arial, sans-serif;
+  --bg: #98ef95;
+  --surface: #ffffff;
+  --line: #d4d4d4;
+  --text: #1d2740;
+  --muted: #666666;
+  --green: #57bb4e;
+  --green-dark: #48a93f;
+  --green-soft: #edf8ea;
+  --danger: #d85d5d;
+  --shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.page-shell {
+  max-width: 1070px;
+  margin: 0 auto;
+  padding: 0 18px 28px;
+}
+
+.legacy-shell {
+  background: var(--surface);
+  border-radius: 0 0 12px 12px;
+  box-shadow: var(--shadow);
+  padding: 0 18px 22px;
+}
+
+.legacy-header {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 0 18px;
+}
+
+.admin-header {
+  grid-template-columns: 190px 1fr 220px;
+}
+
+.legacy-title-wrap {
+  display: flex;
+  justify-content: center;
+  padding-right: 140px;
+}
+
+.legacy-title-wrap h1 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.brand-mark {
+  width: 170px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-image {
+  display: block;
+  width: 155px;
+  height: auto;
+}
+
+.legacy-alerts {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.notice-strip {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid #d9ead7;
+  background: #f8fff8;
+}
+
+.notice-strip.is-highlight {
+  border-left: 4px solid var(--green);
+}
+
+.notice-strip span,
+.notice-strip small,
+.toggle-row,
+.admin-session,
+.fine-print,
+.empty-copy {
+  color: var(--muted);
+}
+
+.search-area {
+  display: grid;
+  gap: 10px;
+}
+
+.legacy-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #9f9f9f;
+  background: #fff;
+  color: #333;
+  border-radius: 0;
+  outline: none;
+}
+
+.legacy-actions,
+.admin-userbar,
+.action-row,
+.toggle-row,
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legacy-button {
+  border: 0;
+  border-radius: 2px;
+  background: var(--green);
+  color: #fff;
+  padding: 8px 14px;
+}
+
+.legacy-button:hover {
+  background: var(--green-dark);
+}
+
+.secondary-button {
+  background: #8fd285;
+}
+
+.danger-lite {
+  background: var(--danger);
+}
+
+.listing-area {
+  margin-top: 8px;
+}
+
+.sector-table-block hr {
+  border: 0;
+  border-top: 1px solid #a0a0a0;
+  margin: 8px 0 10px;
+}
+
+.sector-table-block h2,
+.panel-head h2 {
+  margin: 0 0 10px;
+  color: #000;
+}
+
+.legacy-table-wrap {
+  overflow-x: auto;
+}
+
+.legacy-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.legacy-table th,
+.legacy-table td {
+  border: 1px solid var(--line);
+  padding: 9px 8px;
+  text-align: left;
+}
+
+.legacy-table th {
+  background: #f2f2f2;
+  color: #222;
+}
+
+.legacy-table td {
+  color: #222;
+  background: #fff;
+}
+
+.admin-legacy-shell {
+  padding-bottom: 28px;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.span-two {
+  grid-column: span 2;
+}
+
+.admin-panel-block {
+  border: 1px solid #d8d8d8;
+  background: #fff;
+  padding: 16px;
+}
+
+.legacy-label {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 2px;
+  background: var(--green-soft);
+  color: var(--green-dark);
+  font-size: 0.78rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.auth-card {
+  max-width: 520px;
+  margin: 64px auto 0;
+  background: #fff;
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 920px) {
+  .legacy-header,
+  .admin-header,
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .legacy-title-wrap {
+    justify-content: flex-start;
+    padding-right: 0;
+  }
+
+  .span-two {
+    grid-column: span 1;
+  }
+
+  .legacy-actions,
+  .admin-userbar,
+  .action-row,
+  .table-actions {
+    flex-wrap: wrap;
+  }
+}
